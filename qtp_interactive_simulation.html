@@ -1,0 +1,390 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.sim-wrap { padding: 1rem 0; }
+.header { margin-bottom: 1.25rem; }
+.header h2 { font-size: 17px; font-weight: 500; color: var(--color-text-primary); }
+.header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 3px; }
+.layout { display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 16px; align-items: start; }
+.panel { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; }
+.panel-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+.ctrl-section { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.ctrl-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.ctrl-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+.ctrl-label span { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+input[type=range] { width: 100%; margin: 2px 0 8px; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.toggle-label { font-size: 13px; color: var(--color-text-primary); }
+.toggle { position: relative; width: 36px; height: 20px; cursor: pointer; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: var(--color-border-secondary); border-radius: 20px; transition: background 0.2s; }
+.toggle input:checked + .toggle-track { background: #3266ad; }
+.toggle-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px 14px; }
+.chart-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 6px; }
+.chart-wrap { position: relative; height: 160px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+.metric { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+.metric-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.metric-value { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+.metric-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.alert-box { background: var(--color-background-warning); border: 0.5px solid var(--color-border-warning); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; color: var(--color-text-warning); margin-top: 8px; display: none; }
+.scenario-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.sc-tag { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.sc-line { width: 18px; height: 2px; border-radius: 1px; }
+</style>
+
+<div class="sim-wrap">
+  <div class="header">
+    <h2>Qinghai–Tibet Plateau — Climate Intervention Simulator</h2>
+    <p>Adjust parameters to see how AquaStrat, thermosyphons, and bioconcrete interact over 50 years</p>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-title">Parameters</div>
+
+      <div class="ctrl-section">
+        <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Climate</div>
+        <div class="ctrl-label">Warming rate <span id="wr-val">0.05 °C/yr</span></div>
+        <input type="range" id="warming-rate" min="1" max="10" value="5" step="1">
+        <div class="ctrl-label">Precip variability <span id="pv-val">18%</span></div>
+        <input type="range" id="precip-var" min="5" max="40" value="18" step="1">
+      </div>
+
+      <div class="ctrl-section">
+        <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Thermosyphons</div>
+        <div class="toggle-row">
+          <span class="toggle-label">Enable</span>
+          <label class="toggle"><input type="checkbox" id="thermo-on" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="ctrl-label">Coverage density <span id="td-val">60%</span></div>
+        <input type="range" id="thermo-density" min="10" max="95" value="60" step="5">
+        <div class="ctrl-label">Efficiency η <span id="te-val">0.75</span></div>
+        <input type="range" id="thermo-eff" min="40" max="90" value="75" step="5">
+      </div>
+
+      <div class="ctrl-section">
+        <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Bioconcrete</div>
+        <div class="toggle-row">
+          <span class="toggle-label">Enable</span>
+          <label class="toggle"><input type="checkbox" id="bio-on" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="ctrl-label">Biochar % <span id="bp-val">3%</span></div>
+        <input type="range" id="biochar-pct" min="1" max="5" value="3" step="0.5">
+        <div class="ctrl-label">Volume (m³ × 10⁸) <span id="bv-val">20</span></div>
+        <input type="range" id="bio-vol" min="5" max="80" value="20" step="5">
+      </div>
+
+      <div class="ctrl-section">
+        <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">AquaStrat</div>
+        <div class="toggle-row">
+          <span class="toggle-label">Enable</span>
+          <label class="toggle"><input type="checkbox" id="aq-on" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+        </div>
+        <div class="ctrl-label">Risk threshold <span id="at-val">0.50</span></div>
+        <input type="range" id="aq-thresh" min="30" max="70" value="50" step="5">
+        <div class="ctrl-label">Water efficiency gain <span id="ae-val">25%</span></div>
+        <input type="range" id="aq-eff" min="5" max="40" value="25" step="5">
+      </div>
+
+      <div class="ctrl-section">
+        <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px;">Permafrost</div>
+        <div class="ctrl-label">C release rate (×10⁻³) <span id="cr-val">2.0</span></div>
+        <input type="range" id="c-rate" min="5" max="50" value="20" step="5">
+      </div>
+
+      <button onclick="runAll()" style="width:100%; margin-top: 4px; padding: 8px; font-size: 13px; cursor: pointer; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary);">Recalculate ↗</button>
+      <div class="alert-box" id="tip-box"></div>
+    </div>
+
+    <div>
+      <div class="metrics-row" id="metrics-row"></div>
+      <div class="scenario-legend" id="sc-legend"></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">Ground temperature (°C)</div><div class="chart-wrap"><canvas id="c1"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Permafrost stability (0–1)</div><div class="chart-wrap"><canvas id="c2"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Carbon emitted from permafrost (Pg C)</div><div class="chart-wrap"><canvas id="c3"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Active layer depth (m)</div><div class="chart-wrap"><canvas id="c4"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Carbon sequestered in bioconcrete (Tg C)</div><div class="chart-wrap"><canvas id="c5"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Soil moisture (vol. fraction)</div><div class="chart-wrap"><canvas id="c6"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const SCENARIOS = [
+  { name: 'Baseline',           color: '#c0392b', thermo: false, bio: false, aq: false },
+  { name: 'Thermosyphons only', color: '#e67e22', thermo: true,  bio: false, aq: false },
+  { name: 'Bioconcrete only',   color: '#27ae60', thermo: false, bio: true,  aq: false },
+  { name: 'AquaStrat only',     color: '#2980b9', thermo: false, bio: false, aq: true  },
+  { name: 'Full system',        color: '#1a1612', thermo: true,  bio: true,  aq: true  },
+];
+
+const YEARS = 50;
+const DT = 1/12;
+const N = Math.round(YEARS / DT);
+const T_ARR = Array.from({length: N}, (_, i) => i * DT);
+const LABELS = Array.from({length: N}, (_, i) => (i * DT).toFixed(1));
+
+function getParams() {
+  return {
+    warmingRate:   parseInt(document.getElementById('warming-rate').value) / 100,
+    precipVar:     parseInt(document.getElementById('precip-var').value) / 100,
+    thermoOn:      document.getElementById('thermo-on').checked,
+    thermoDensity: parseInt(document.getElementById('thermo-density').value) / 100,
+    thermoEff:     parseInt(document.getElementById('thermo-eff').value) / 100,
+    bioOn:         document.getElementById('bio-on').checked,
+    biocharPct:    parseFloat(document.getElementById('biochar-pct').value),
+    bioVol:        parseInt(document.getElementById('bio-vol').value) * 1e8,
+    aqOn:          document.getElementById('aq-on').checked,
+    aqThresh:      parseInt(document.getElementById('aq-thresh').value) / 100,
+    aqEff:         parseInt(document.getElementById('aq-eff').value) / 100,
+    cRate:         parseInt(document.getElementById('c-rate').value) / 10000,
+  };
+}
+
+function airTemp(t, p) {
+  return -4.0 + p.warmingRate * t + 8.0 * Math.sin(2 * Math.PI * t);
+}
+
+function smooth(arr, w) {
+  w = w || 10;
+  const out = new Array(arr.length);
+  for (let i = 0; i < arr.length; i++) {
+    let s = 0, c = 0;
+    for (let j = Math.max(0, i-w); j <= Math.min(arr.length-1, i+w); j++) { s += arr[j]; c++; }
+    out[i] = s / c;
+  }
+  return out;
+}
+
+let rngSeed = 42;
+function rng() {
+  rngSeed = (rngSeed * 16807) % 2147483647;
+  return (rngSeed - 1) / 2147483646;
+}
+function randn() {
+  const u = 1 - rng(), v = 1 - rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function simulate(p, useThermo, useBio, useAq) {
+  rngSeed = 42;
+  const T_gnd_a = [], D_act_a = [], S_a = [], C_cum_a = [], C_bio_a = [], soil_a = [];
+  let Tg = -2.5, Cf = 160.0, S = 0.78, Ccum = 0.0, CBioCumTg = 0.0, soilM = 0.45;
+  let precipBuf = [];
+  let effDensity = p.thermoDensity;
+  let aquaThermBoost = 0;
+
+  const thermoOn = p.thermoOn && useThermo;
+  const bioOn = p.bioOn && useBio;
+  const aqOn = p.aqOn && useAq;
+
+  for (let i = 0; i < N; i++) {
+    const ti = T_ARR[i];
+    const Tair = airTemp(ti, p);
+    const seasonal = 1 + 0.65 * Math.sin(2 * Math.PI * (ti - 0.38));
+    const precipRaw = 400 * seasonal * (1 + p.precipVar * randn()) * DT;
+    const precip = Math.max(0, precipRaw);
+    precipBuf.push(precip * (1/DT));
+    if (precipBuf.length > 12) precipBuf.shift();
+    const precipAnn = precipBuf.reduce((a,b) => a+b, 0) / precipBuf.length;
+
+    if (aqOn && ti >= 2) {
+      if (S < p.aqThresh) {
+        aquaThermBoost = Math.min(0.2, (p.aqThresh - S) * 0.7);
+        effDensity = Math.min(0.95, p.thermoDensity + aquaThermBoost);
+      } else {
+        effDensity = p.thermoDensity;
+      }
+    }
+
+    const alpha = 0.20, tau = 4.0;
+    let dT = alpha * (Tair - Tg) / tau * DT;
+    if (thermoOn && ti >= 5 && Tair < Tg) {
+      const grad = Math.max(0, (Tg - Tair) / 12);
+      dT -= 1.5 * effDensity * p.thermoEff * grad * DT;
+    }
+    Tg += dT;
+
+    const TairAnn = -4.0 + p.warmingRate * ti;
+    const tdd = Math.max(0, TairAnn + 4.0) * 90;
+    let D = 0.35 * Math.sqrt(tdd + 1e-6);
+    if (Tg > -1.0) D *= 1 + 0.45 * (Tg + 1.0);
+    D = Math.max(0.3, Math.min(9.0, D));
+
+    const fTemp = 1 / (1 + Math.exp(3.5 * (Tg + 1.0)));
+    const fDepth = 1 - Math.min(1, Math.max(0, (D - 0.3) / 6.7));
+    S = 0.6 * fTemp + 0.4 * fDepth;
+
+    let k;
+    if (Tg <= -1.0) {
+      k = p.cRate * 0.15;
+    } else {
+      const ex = Tg + 1.0;
+      k = p.cRate * (1 + Math.pow(ex, 2.2));
+    }
+    k *= (1 - 0.45 * S);
+    if (thermoOn && ti >= 5) k *= (1 - 0.40 * effDensity * p.thermoEff);
+    const Crel = Math.max(0, k * Cf * DT);
+    Cf = Math.max(0, Cf - Crel);
+    Ccum += Crel;
+
+    let CBioDt = 0;
+    if (bioOn && ti >= 3) {
+      const elapsed = ti - 3;
+      let ramp = Math.min(1, elapsed / 15);
+      if (aqOn && Ccum > 4) ramp = Math.min(1.2, ramp * 1.3);
+      const volYr = p.bioVol / YEARS;
+      const kgPerM3 = (p.biocharPct / 100) * 350 * 0.75;
+      const TgPerYr = volYr * ramp * kgPerM3 * 1.15 / 1e9;
+      CBioDt = TgPerYr * DT;
+      CBioCumTg += CBioDt;
+    }
+
+    let ET = 280 * DT * Math.max(0.3, 1 + 0.04 * Tair) / 1000;
+    let ro = 0.55 * precip / 1000;
+    if (aqOn) { ET *= (1 - p.aqEff); ro *= 0.72; }
+    soilM = Math.max(0.05, Math.min(0.95, soilM + (precip/1000 - ET - ro) * DT));
+
+    T_gnd_a.push(Tg);
+    D_act_a.push(D);
+    S_a.push(S);
+    C_cum_a.push(Ccum);
+    C_bio_a.push(CBioCumTg);
+    soil_a.push(soilM);
+  }
+
+  return {
+    T_ground: smooth(T_gnd_a),
+    D_active: smooth(D_act_a),
+    S: smooth(S_a),
+    C_cum: C_cum_a,
+    C_bio_Tg: C_bio_a,
+    soil_M: smooth(soil_a),
+  };
+}
+
+let charts = {};
+
+function decimateData(arr, step) {
+  step = step || 3;
+  return arr.filter((_, i) => i % step === 0);
+}
+function decimateLabels(step) {
+  return T_ARR.filter((_, i) => i % step === 0).map(v => v.toFixed(0));
+}
+
+const STEP = 3;
+const xLabels = decimateLabels(STEP);
+
+function makeChart(id, datasets, opts) {
+  if (charts[id]) { charts[id].destroy(); }
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'line',
+    data: { labels: xLabels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: {
+        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)}`
+      }}},
+      elements: { point: { radius: 0 }, line: { borderWidth: 1.6 } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(0,0,0,0.05)' }, ...(opts||{}) }
+      }
+    }
+  });
+}
+
+function runAll() {
+  const p = getParams();
+  const results = SCENARIOS.map(sc => ({ sc, data: simulate(p, sc.thermo, sc.bio, sc.aq) }));
+
+  function ds(key, step) {
+    return results.map(r => ({
+      label: r.sc.name,
+      data: decimateData(r.data[key], step || STEP),
+      borderColor: r.sc.color,
+      backgroundColor: 'transparent',
+      borderDash: r.sc.name === 'Baseline' ? [5,3] : r.sc.name === 'Full system' ? [] : [2,2],
+      borderWidth: r.sc.name === 'Full system' ? 2.5 : 1.5,
+    }));
+  }
+
+  makeChart('c1', ds('T_ground'));
+  makeChart('c2', ds('S'), { min: 0, max: 1 });
+  makeChart('c3', ds('C_cum'));
+  makeChart('c4', ds('D_active'));
+  makeChart('c5', ds('C_bio_Tg'));
+  makeChart('c6', ds('soil_M'), { min: 0.1, max: 0.95 });
+
+  const full = results.find(r => r.sc.name === 'Full system').data;
+  const base = results.find(r => r.sc.name === 'Baseline').data;
+  const dT = (full.T_ground[N-1] - base.T_ground[N-1]).toFixed(2);
+  const dC = ((1 - full.C_cum[N-1] / base.C_cum[N-1]) * 100).toFixed(1);
+  const seq = full.C_bio_Tg[N-1].toFixed(2);
+  const dS = (full.S[N-1] - base.S[N-1]).toFixed(3);
+
+  document.getElementById('metrics-row').innerHTML = `
+    <div class="metric"><div class="metric-label">Ground temp change</div><div class="metric-value" style="color:${parseFloat(dT)<0?'#27ae60':'#c0392b'}">${dT}°C</div><div class="metric-sub">Full vs baseline, yr 50</div></div>
+    <div class="metric"><div class="metric-label">C emissions reduced</div><div class="metric-value" style="color:#27ae60">${dC}%</div><div class="metric-sub">Full vs baseline</div></div>
+    <div class="metric"><div class="metric-label">C sequestered</div><div class="metric-value">${seq}</div><div class="metric-sub">Tg C in bioconcrete</div></div>
+    <div class="metric"><div class="metric-label">Stability gain</div><div class="metric-value" style="color:#27ae60">+${dS}</div><div class="metric-sub">Permafrost index units</div></div>
+  `;
+
+  const tipBox = document.getElementById('tip-box');
+  const wr = p.warmingRate;
+  if (wr >= 0.07) {
+    tipBox.style.display = 'block';
+    tipBox.textContent = 'High warming rate — permafrost tipping point likely. Full system strongly recommended.';
+  } else if (!p.thermoOn) {
+    tipBox.style.display = 'block';
+    tipBox.textContent = 'Thermosyphons disabled — primary permafrost protection removed.';
+  } else {
+    tipBox.style.display = 'none';
+  }
+
+  document.getElementById('sc-legend').innerHTML = SCENARIOS.map(sc => `
+    <div class="sc-tag">
+      <div class="sc-line" style="background:${sc.color};${sc.name==='Baseline'?'opacity:0.6':''}"></div>
+      <span>${sc.name}</span>
+    </div>`).join('');
+}
+
+function bindSlider(id, displayId, fmt) {
+  const el = document.getElementById(id);
+  const out = document.getElementById(displayId);
+  el.addEventListener('input', () => { out.textContent = fmt(el.value); });
+}
+
+bindSlider('warming-rate', 'wr-val', v => (parseInt(v)/100).toFixed(2) + ' °C/yr');
+bindSlider('precip-var',   'pv-val', v => v + '%');
+bindSlider('thermo-density','td-val', v => v + '%');
+bindSlider('thermo-eff',   'te-val', v => (parseInt(v)/100).toFixed(2));
+bindSlider('biochar-pct',  'bp-val', v => parseFloat(v).toFixed(1) + '%');
+bindSlider('bio-vol',      'bv-val', v => v);
+bindSlider('aq-thresh',    'at-val', v => (parseInt(v)/100).toFixed(2));
+bindSlider('aq-eff',       'ae-val', v => v + '%');
+bindSlider('c-rate',       'cr-val', v => (parseInt(v)/10).toFixed(1));
+
+['warming-rate','precip-var','thermo-density','thermo-eff','biochar-pct','bio-vol','aq-thresh','aq-eff','c-rate',
+ 'thermo-on','bio-on','aq-on'].forEach(id => {
+  document.getElementById(id).addEventListener('change', runAll);
+});
+['warming-rate','precip-var','thermo-density','thermo-eff','biochar-pct','bio-vol','aq-thresh','aq-eff','c-rate'].forEach(id => {
+  document.getElementById(id).addEventListener('input', runAll);
+});
+
+runAll();
+</script>
