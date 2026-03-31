@@ -393,6 +393,47 @@
   .rule-trio span:nth-child(2) { width: 8px; }
   .rule-trio span:nth-child(3) { flex: 1; }
 
+  /* ── SIMULATION LINK ── */
+  .sim-link-bar {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,.12);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .sim-link-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+  .sim-link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--paper);
+    background: transparent;
+    border: 1px solid var(--moss-light);
+    padding: 10px 20px;
+    text-decoration: none;
+    transition: background .2s, color .2s;
+  }
+  .sim-link-btn:hover {
+    background: var(--moss);
+    color: var(--paper);
+  }
+  .sim-link-btn .arrow {
+    font-size: 14px;
+    transition: transform .2s;
+  }
+  .sim-link-btn:hover .arrow { transform: translateX(3px); }
+
   @media (max-width: 640px) {
     .content, .masthead-inner { padding-left: 20px; padding-right: 20px; }
     .toc-inner { padding-left: 20px; }
@@ -414,6 +455,14 @@
       <div class="meta-item">Discipline &nbsp;<span>Interdisciplinary Engineering</span></div>
       <div class="meta-item">Components &nbsp;<span>4 Integrated Subsystems</span></div>
       <div class="meta-item">Scope &nbsp;<span>Urban Infrastructure Scale</span></div>
+    </div>
+    <div class="sim-link-bar">
+      <span class="sim-link-label">Companion model</span>
+      <a class="sim-link-btn" href="qtp_interactive_simulation.html">
+        QTP Climate Intervention Simulator
+        <span class="arrow">&#8594;</span>
+      </a>
+      <span class="sim-link-label" style="opacity:.6;">Qinghai&#8211;Tibet Plateau &middot; AquaStrat &times; Thermosyphons &times; Bioconcrete</span>
     </div>
   </div>
 </header>
@@ -763,6 +812,11 @@
 <footer>
   <p>Aether Matrix — Unified Technical Synthesis &nbsp;·&nbsp; Physics × Chemistry × Environmental Systems &amp; Societies</p>
   <p style="margin-top:8px; opacity:.5;">Synthesised from three independent technical proposals into a single interdisciplinary engineering report.</p>
+  <p style="margin-top:16px;">
+    <a href="qtp_interactive_simulation.html" style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: var(--moss-light); text-decoration: none; border: 1px solid var(--moss-light); padding: 8px 18px; display: inline-block; transition: background .2s;">
+      → Open QTP Climate Intervention Simulator
+    </a>
+  </p>
 </footer>
 
 </body>
